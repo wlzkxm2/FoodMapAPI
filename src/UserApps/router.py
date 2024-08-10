@@ -42,10 +42,18 @@ async def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(depe
     users = service.get_users(db, skip=skip, limit=limit)
     return users
 
-@router.post("/users/", response_model=schemas.User)
+@router.post("/", response_model=schemas.User)
 async def create_user(user: schemas.UserCreate, db: Session = Depends(dependencies.get_db)):
     db_user = service.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     return service.create_user(db=db, user=user)
+
+@router.post("/login", response_model=schemas.User)
+async def login(user: schemas.UserCreate, db: Session = Depends(dependencies.get_db)):
+    db_user = service.authenticate_user(db, email=user.email, password=user.password)
+    if not db_user:
+        raise HTTPException(status_code=400, detail="User not found")
+    
+    return db_user
