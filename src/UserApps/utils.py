@@ -82,11 +82,6 @@ async def validate_token(request: Request) -> dict | None:
     scheme = authorization.split(" ")[0]
     param = authorization.split(" ")[1]
     
-    print(authorization)
-    print(not authorization)
-    print(scheme.lower() != "bearer")
-    print(not jwt_service.check_access_token(param))
-    
     if not authorization or scheme.lower() != "bearer" or not jwt_service.check_access_token(param):
         raise HTTPErrorException(status_code=status.HTTP_401_UNAUTHORIZED, error_code="INVALID_TOKEN", detail="Invalid token")
     payload = jwt.decode(param, jwt_service.SECRET_KEY, algorithms=jwt_service.ALGORITHM)

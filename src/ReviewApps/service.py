@@ -2,13 +2,16 @@
     모듈별 비즈니스 로직
 '''
 from sqlalchemy.orm import Session
+
+from UserApps.service import get_user_by_email
 from . import models, schemas
 
 def get_review(db: Session, review_id: int):
     return db.query(models.Review).filter(models.Review.id == review_id).first()
 
-def create_user_review(db: Session, review: schemas.ReviewCreate, user_id: int):
-    db_review = models.Review(**review.model_dump(), user_id=user_id)
+def create_user_review(db: Session, review: schemas.ReviewCreate, user_email: str):
+    db_user = get_user_by_email(db, user_email)
+    db_review = models.Review(**review.model_dump(), user_id=db_user.id)
     db.add(db_review)
     db.commit()
     db.refresh(db_review)

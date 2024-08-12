@@ -4,21 +4,20 @@ from pydantic import BaseModel
 
 from database import engine
 
-from ReviewApps.router import router as review_apps
-
-from UserApps.router import TokenService, UserService
+import UserApps.router as user_router
+import ReviewApps.router as review_router
+# from ReviewApps.router import ReviewRouter
+# from UserApps.router import TokenRouter, UserRouter
 
 import uvicorn
 
 # uvicorn main:app --reload
 
 app = FastAPI()
-token_service = TokenService()
-user_service = UserService()
 
-app.include_router(review_apps)
-app.include_router(token_service.router)
-app.include_router(user_service.router)
+app.include_router(review_router.ReviewRouter().router)
+app.include_router(user_router.UserRouter().router)
+app.include_router(user_router.TokenRouter().router)
 
 @app.get("/health_check/")
 async def health_check():

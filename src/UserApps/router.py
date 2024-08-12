@@ -15,8 +15,7 @@ from database import SessionLocal, engine
 from . import models as user_models
 from . import service, dependencies, schemas
 
-
-class UserService :
+class UserRouter :
     def __init__(self) -> None:
         self.router = APIRouter(prefix='/users')
         self.router.add_api_route("/master", self.health_check, methods=["GET"])
@@ -72,7 +71,7 @@ class UserService :
                 detail="Invalid request"
             )
 
-class TokenService :
+class TokenRouter :
     def __init__(self):
         self.router = APIRouter(prefix='/token')
         self.router.add_api_route("/master", self.health_check, methods=["GET"])
