@@ -3,3 +3,4 @@
 /foodmapenv
 src/env/config.py
 *.pyc
+alembic.ini
