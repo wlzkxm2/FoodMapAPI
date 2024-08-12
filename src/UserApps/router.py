@@ -15,7 +15,6 @@ from database import SessionLocal, engine
 from . import models as user_models
 from . import service, dependencies, schemas
 
-user_models.Base.metadata.create_all(bind=engine)
 
 class UserService :
     def __init__(self) -> None:
