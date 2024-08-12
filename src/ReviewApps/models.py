@@ -2,7 +2,7 @@
     db 모델용
 '''
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from database import Base 
@@ -16,6 +16,11 @@ class Review(Base) :
     user_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String, index=True)
     content = Column(String)
+    
+    address = Column(String)
+    
+    latitude = Column(Float)
+    longitude = Column(Float)
     
     owner = relationship("User", back_populates="reviews")
     eat_food = relationship("Food", back_populates="reviews")
