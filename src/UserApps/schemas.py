@@ -3,6 +3,7 @@
 '''
 
 from pydantic import BaseModel
+from passlib.context import CryptContext
 
 from ReviewApps.schemas import Review
 
@@ -19,3 +20,4 @@ class User(UserBase):
     
     class Config:
         from_attributes = True
+        
