@@ -17,101 +17,88 @@ from . import service, dependencies, schemas
 
 user_models.Base.metadata.create_all(bind=engine)
 
-router = APIRouter(prefix='/users')
-
-@router.get("/health_check/", tags=["health_check"])
-async def health_check():
-    return {"message" : "user_apps - ok"}
-
-@router.post("/parameter_test/")
-async def parameter_test(test: int):
-    """
-        Parameters
-    """
-    if test is not None :
-        return {"test" : test}
-    else :
-        return {"test" : "None"}
-    
-@router.post("/body_test/")
-async def body_test(body: RequestData):
-    """
-        body
-    """
-    if body is not None :
-        return {"body" : body}
-    else :
-        return {"body" : "None"}
-
-@router.get("/users/", tags=["users"])
-async def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(dependencies.get_db)):
-    users = service.get_users(db, skip=skip, limit=limit)
-    return users
-
-@router.post("/", response_model=schemas.User)
-async def create_user(user: schemas.UserCreate, db: Session = Depends(dependencies.get_db)):
-    db_user = service.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    return service.create_user(db=db, user=user)
-
-@router.post("/login", response_model=schemas.User)
-async def login(request:Request, payload: Dict[Any, Any], db: Session = Depends(dependencies.get_db)):
-    try :
-        db_user = service.authenticate_user(db, email=payload['email'], password=payload['password'])
+class UserService :
+    def __init__(self) -> None:
+        self.router = APIRouter(prefix='/users')
+        self.router.add_api_route("/master", self.health_check, methods=["GET"])
+        self.router.add_api_route("/register", self.create_user, methods=["POST"])
+        self.router.add_api_route("/login", self.login, methods=["POST"])
         
-        if not db_user:
-            raise HTTPErrorException(
-                error_code="INVALID_USER",
-                detail="Invalid email or password"
+    def health_check(self):
+        return {"message" : "UserService - ok"}
+    
+    async def create_user(self, user: schemas.UserCreate, db: Session = Depends(dependencies.get_db)):
+        db_user = service.get_user_by_email(db, email=user.email)
+        if db_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        return service.create_user(db=db, user=user)
+
+    async def login(self, request:Request, payload: Dict[Any, Any], db: Session = Depends(dependencies.get_db)):
+        try :
+            db_user = service.authenticate_user(db, email=payload['email'], password=payload['password'])
+            
+            if not db_user:
+                raise HTTPErrorException(
+                    error_code="INVALID_USER",
+                    detail="Invalid email or password"
+                )
+            
+            refresh_token = jwt_service.create_refresh_token(
+                {
+                    "user": db_user.email,
+                    "create_at" : datetime.now().timestamp(),
+                    "type" : "refresh"
+                }
             )
-        
-        refresh_token = jwt_service.create_refresh_token(
-            {
-                "user": db_user.email,
-                "create_at" : datetime.now().timestamp(),
-                "type" : "refresh"
-            }
-        )
-        
-        access_token = jwt_service.create_access_token(
-            {
-                "user": db_user.email,
-                "create_at" : datetime.now().timestamp(),
-                "type" : "access",
-            }
-        )
-        
-        return HTTPResponse(
-            content={
-                "type" : "Bearer",
-                "access_token": access_token,
-                "refresh_token": refresh_token
-            })
-    except Exception as e:
-        print(e)
-        raise HTTPErrorException(
-            error_code="FORBIDDEN_REQUEST",
-            detail="Invalid request"
-        )
-        
-@router.post("/refresh_token")
-async def refresh(payload: Dict[Any, Any], db: Session = Depends(dependencies.get_db)):
-    print("asd")
-    try :
-        refresh_token = payload['refresh_token']
-        token = jwt_service.refresh_token(refresh_token)
-        
-        return HTTPResponse(
-            content={
-                "type" : "Bearer",
-                "access_token": token,
-                "refresh_token": refresh_token
-            })
-    except Exception as e:
-        print(e)
-        raise HTTPErrorException(
-            error_code="FORBIDDEN_REQUEST",
-            detail="Invalid request"
-        )
+            
+            access_token = jwt_service.create_access_token(
+                {
+                    "user": db_user.email,
+                    "create_at" : datetime.now().timestamp(),
+                    "type" : "access",
+                }
+            )
+            
+            return HTTPResponse(
+                content={
+                    "type" : "Bearer",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token
+                })
+        except Exception as e:
+            print(e)
+            raise HTTPErrorException(
+                error_code="FORBIDDEN_REQUEST",
+                detail="Invalid request"
+            )
+
+class TokenService :
+    def __init__(self):
+        self.router = APIRouter(prefix='/token')
+        self.router.add_api_route("/master", self.health_check, methods=["GET"])
+        self.router.add_api_route("/refresh_token", self.refresh, methods=["POST"])
+    
+    def health_check(self):
+        return {"message" : "TokenService - ok"}
+            
+    async def refresh(self, payload: Dict[Any, Any], db: Session = Depends(dependencies.get_db)):
+        try :
+            refresh_token = payload['refresh_token']
+            token = jwt_service.refresh_token(refresh_token)
+            
+            return HTTPResponse(
+                content={
+                    "type" : "Bearer",
+                    "access_token": token,
+                    "refresh_token": refresh_token
+                })
+        except Exception as e:
+            print(e)
+            raise HTTPErrorException(
+                error_code="FORBIDDEN_REQUEST",
+                detail="Invalid request"
+            )
+    
+
+
