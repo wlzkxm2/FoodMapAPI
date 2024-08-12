@@ -96,14 +96,18 @@ async def login(request:Request, payload: Dict[Any, Any], db: Session = Depends(
             detail="Invalid request"
         )
         
-@router.post("/token", response_model=schemas.User)
-async def token(request:Request, payload: Dict[Any, Any], db: Session = Depends(dependencies.get_db)):
+@router.post("/refresh_token")
+async def refresh(payload: Dict[Any, Any], db: Session = Depends(dependencies.get_db)):
+    print("asd")
     try :
-        await validate_token(request)
+        refresh_token = payload['refresh_token']
+        token = jwt_service.refresh_token(refresh_token)
         
         return HTTPResponse(
             content={
-                "message": "token is valid"
+                "type" : "Bearer",
+                "access_token": token,
+                "refresh_token": refresh_token
             })
     except Exception as e:
         print(e)

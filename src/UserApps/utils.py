@@ -71,9 +71,10 @@ class JWTService :
         
     def refresh_token(self, token: str) :
         # 토큰 갱신
-        payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-        if payload['exp'] < datetime.now() :
+        payload = jwt.decode(token, self.SECRET_KEY, algorithms=self.ALGORITHM)
+        if payload['exp'] < datetime.now().timestamp() :
             return False
+        
         return self.create_access_token(payload)
     
 async def validate_token(request: Request) -> dict | None:
@@ -81,18 +82,14 @@ async def validate_token(request: Request) -> dict | None:
     scheme = authorization.split(" ")[0]
     param = authorization.split(" ")[1]
     
+    print(authorization)
     print(not authorization)
     print(scheme.lower() != "bearer")
     print(not jwt_service.check_access_token(param))
     
     if not authorization or scheme.lower() != "bearer" or not jwt_service.check_access_token(param):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token is invalid",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    payload = jwt.decode(authorization, jwt_service.SECRET_KEY, algorithms=[jwt_service.ALGORITHM])
-    
+        raise HTTPErrorException(status_code=status.HTTP_401_UNAUTHORIZED, error_code="INVALID_TOKEN", detail="Invalid token")
+    payload = jwt.decode(param, jwt_service.SECRET_KEY, algorithms=jwt_service.ALGORITHM)
     return payload
 
 jwt_service = JWTService()
