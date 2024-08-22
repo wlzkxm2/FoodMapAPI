@@ -25,15 +25,29 @@ class ReviewRouter :
         token = await validate_token(request)
         
         print(token)
+        print("-----------------")
         
-        review = schemas.ReviewCreate(
+        print(payload.get('title'))
+        print(payload.get('content'))
+        print(payload.get('food'))
+        print("-----------------")
+        
+        _food_list = []
+        for _payload_food in payload.get('food') :
+            _food_list.append(schemas.FoodCreate(**_payload_food))
+            
+        _review = schemas.ReviewCreate(
             title=payload.get('title'),
             content=payload.get('content'),
             rating=payload.get('rating'),
         )
         
-        print(review)
+        print("-----------------")
+        print(_review)
+        print("-----------------")
         
-        service.create_user_review(self.db, review, token.get('user'))
+        _create_review = service.create_user_review(db, _review, token.get('user'))
+        
+        await service.bulk_create_food(db, _food_list, _create_review.id)
         
         return {"message" : "review_apps - review"}

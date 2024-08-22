@@ -27,6 +27,12 @@ def create_food(db: Session, food: schemas.FoodCreate, review_id: int):
     db.refresh(db_food)
     return db_food
 
+async def bulk_create_food(db: Session, food_list: list[schemas.FoodCreate], review_id: int):
+    db_food_list = [models.Food(**food.model_dump(), review_id=review_id) for food in food_list]
+    db.add_all(db_food_list)
+    db.commit()
+    return db_food_list
+
 def get_food_img(db: Session, food_img_id: int):
     return db.query(models.FoodImg).filter(models.FoodImg.id == food_img_id).first()
 

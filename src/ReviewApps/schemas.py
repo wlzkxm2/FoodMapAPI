@@ -26,7 +26,9 @@ class FoodBase(BaseModel):
     rating: int
 
 class FoodCreate(BaseModel):
-    pass
+    name: str
+    price: int
+    rating: int
 
 class Food(FoodBase):
     id: int
@@ -44,7 +46,8 @@ class ReviewBase(BaseModel):
     longitude: float
         
 class ReviewCreate(BaseModel):
-    pass
+    title: str
+    content: str
 
 class Review(ReviewBase):
     id: int
