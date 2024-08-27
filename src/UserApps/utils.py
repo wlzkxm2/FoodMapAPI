@@ -16,7 +16,7 @@ class RequestData(BaseModel) :
     email: Optional[str] = None
 
 def HTTPErrorException(
-    status_code: int=status.HTTP_403_FORBIDDEN, 
+    status_code: int=status.HTTP_400_BAD_REQUEST, 
     error_code:str="FORBIDDEN_REQUEST", 
     detail: str="올바르지 않은 요청입니다."
 ) :
