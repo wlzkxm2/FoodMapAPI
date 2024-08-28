@@ -2,6 +2,7 @@
     모든 엔드포인트를 갖춘 각 모듈의 핵심
 '''
 from base64 import b64decode
+from datetime import datetime
 from typing import Any, Dict
 from fastapi import APIRouter, Depends, Request, Response
 from ReviewApps import dependencies, schemas, service
@@ -27,6 +28,13 @@ class ReviewRouter :
             return {"error": "No byte image provided"}
 
         decode_img = b64decode(byte_image)
+        
+        with open('../media/test/test.jpg', 'wb') as f:
+            f.write(decode_img)
+        print(f.name)
+        print('/'.join(f.name.split('/')[1:]
+        ))
+
         # 이미지 응답 생성
         return Response(content=decode_img, media_type="image/jpeg")
     
@@ -37,6 +45,18 @@ class ReviewRouter :
         _food_list = []
         for _payload_food in payload.get('food') :
             _food_list.append(schemas.FoodCreate(**_payload_food))
+        
+        img_list = []
+        for imgs in payload.get('FoodImg') : 
+            b64decode_img = b64decode(imgs)
+            with open(f'../media/review_imgs/{datetime.now().timestamp()}.jpg', 'wb') as f:
+                f.write(b64decode_img)
+                
+            img_list.append(
+                schemas.FoodImgCreate(
+                    img='/'.join(f.name.split('/')[1:])
+                )
+            )
             
         _review = schemas.ReviewCreate(
             title=payload.get('title'),
@@ -47,5 +67,6 @@ class ReviewRouter :
         _create_review = service.create_user_review(db, _review, token.get('user'))
         
         await service.bulk_create_food(db, _food_list, _create_review.id)
+        await service.bulk_create_food_img(db, img_list, _create_review.id)
         
         return {"message" : "review_apps - review"}

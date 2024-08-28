@@ -1,6 +1,7 @@
 from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
 
 from database import engine
 
@@ -14,6 +15,8 @@ import uvicorn
 # uvicorn main:app --reload
 
 app = FastAPI()
+
+app.mount("/media", StaticFiles(directory="../media"), name="media")
 
 app.include_router(review_router.ReviewRouter().router)
 app.include_router(user_router.UserRouter().router)

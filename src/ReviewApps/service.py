@@ -42,3 +42,9 @@ def create_food_img(db: Session, food_img: schemas.FoodImgCreate, review_id: int
     db.commit()
     db.refresh(db_food_img)
     return db_food_img
+
+async def bulk_create_food_img(db: Session, food_img_list: list[schemas.FoodImgCreate], review_id: int):
+    db_food_img_list = [models.FoodImg(**food_img.model_dump(), review_id=review_id) for food_img in food_img_list]
+    db.add_all(db_food_img_list)
+    db.commit()
+    return db_food_img_list

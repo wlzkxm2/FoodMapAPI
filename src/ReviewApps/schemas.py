@@ -9,7 +9,7 @@ class FoodImgBase(BaseModel):
     img: str
         
 class FoodImgCreate(BaseModel):
-    pass
+    img:str
 
 class FoodImg(FoodImgBase):
     id: int
