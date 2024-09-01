@@ -78,7 +78,9 @@ class JWTService :
         return self.create_access_token(payload)
     
 async def validate_token(request: Request) -> dict | None:
+    print(request.headers)
     authorization = request.headers.get("Authorization")
+    print(authorization) 
     scheme = authorization.split(" ")[0]
     param = authorization.split(" ")[1]
     

@@ -19,10 +19,15 @@ class UserRouter :
     def __init__(self) -> None:
         self.router = APIRouter(prefix='/users')
         self.router.add_api_route("/master", self.health_check, methods=["GET"])
+        self.router.add_api_route("/auth_health_check", self.auth_health_check, methods=["GET", "POST"])
         self.router.add_api_route("/register", self.create_user, methods=["POST"])
         self.router.add_api_route("/login", self.login, methods=["POST"])
         
     def health_check(self):
+        return {"message" : "UserService - ok"}
+    
+    async def auth_health_check(self, request: Request):
+        token = await validate_token(request)
         return {"message" : "UserService - ok"}
     
     async def create_user(self, user: schemas.UserCreate, db: Session = Depends(dependencies.get_db)):
