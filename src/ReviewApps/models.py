@@ -16,6 +16,7 @@ class Review(Base) :
     user_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String, index=True)
     content = Column(String)
+    rating = Column(Integer)
     
     address = Column(String)
     

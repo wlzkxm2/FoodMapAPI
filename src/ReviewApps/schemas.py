@@ -44,6 +44,7 @@ class ReviewBase(BaseModel):
     content: str
     latitude: float
     longitude: float
+    rating: int
         
 class ReviewCreate(BaseModel):
     title: str
